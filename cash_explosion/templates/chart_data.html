@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Chart Data</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css')}}">
+    <script src="{{ url_for('static', filename='bootstrap.min.js')}}"></script>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='icon/cashexplosion.ico')}}">
+    <style>
+        #wrapper{
+            width:90%;
+            margin:0 auto;
+        }
+        rect:hover{
+            background: "red"
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-light bg-light">
+        <a class="navbar-brand" href="#">
+            <img src="{{url_for('static', filename='icon/cashexplosion.svg')}}" class="d-inline-block align-top" alt="">
+        </a>
+        <form class="form-inline">
+        {% for n in navbar %}
+            <a href="/{{n.link}}" class="btn btn-primary">{{n.name}}</a>
+        {% endfor %}
+        </form>
+    </nav>
+    <script src="{{ url_for('static', filename='d3.min.js')}}"></script>
+    <script>
+    //SVG dimensions
+    var svgHeight = 500;
+    //var svgWidth = 1000;
+    var svgWidth = window.innerWidth - 50
+
+    //margins
+    var chartMargin = {
+        top: 30,
+        right: 30,
+        bottom: 50,
+        left: 80
+    };
+
+    // Define dimensions of the chart area
+    var chartWidth = svgWidth - chartMargin.left - chartMargin.right;
+    var chartHeight = svgHeight - chartMargin.top - chartMargin.bottom;
+
+    // Select body, append SVG area to it, and set the dimensions
+    var svg = d3.select("body")
+    .append("svg")
+    .attr("height", svgHeight)
+    .attr("width", svgWidth);
+
+    var svg2 = d3.select("body")
+    .append("svg")
+    .attr("height", svgHeight)
+    .attr("width", svgWidth);
+
+    // Append a group to the SVG area and shift ('translate') it to the right and to the bottom
+    var chartGroup = svg.append("g")
+    .attr("transform", `translate(${chartMargin.left}, ${chartMargin.top})`);
+    var chartGroup2 = svg2.append("g")
+    .attr("transform", `translate(${chartMargin.left}, ${chartMargin.top})`);
+
+    d3.json("/api/get_chart_data").then(function(data){
+        for (var i = 0; i<data.length; i++){
+             data[i]["number"] = `${i+1}`
+        }
+        
+        // Configure a band scale for the horizontal axis with a padding of 0.1 (10%)
+        var xBandScale = d3.scaleBand()
+            .domain(data.map(d => d.number))
+            .range([0, chartWidth])
+            .padding(0.1);
+
+        // Create a linear scale for the vertical axis.
+        var yLinearScale = d3.scaleLinear()
+            .domain([2800, d3.max(data, d => d.average)])
+            .range([chartHeight, 0]);
+        var yLinearScale2 = d3.scaleLinear()
+            .domain([40, d3.max(data, d => d.frequency)])
+            .range([chartHeight, 0]);
+
+        // Create two new functions passing our scales in as arguments
+        // These will be used to create the chart's axes
+        var bottomAxis = d3.axisBottom(xBandScale);
+        var leftAxis = d3.axisLeft(yLinearScale).ticks(20);
+        var leftAxis2 = d3.axisLeft(yLinearScale2).ticks(20);
+
+        // Append two SVG group elements to the chartGroup area,
+        // and create the bottom and left axes inside of them
+        chartGroup.append("g")
+            .call(leftAxis);
+        chartGroup2.append("g")
+            .call(leftAxis2);
+
+        chartGroup.append("g")
+            .attr("transform", `translate(0, ${chartHeight})`)
+            .call(bottomAxis);
+        chartGroup2.append("g")
+            .attr("transform", `translate(0, ${chartHeight})`)
+            .call(bottomAxis);
+
+        // Create one SVG rectangle per piece of tvData
+        // Use the linear and band scales to position each rectangle within the chart
+        chartGroup.selectAll(".bar")
+            .data(data)
+            .enter()
+            .append("rect")
+            .attr("class", "bar")
+            .attr("x", d => xBandScale(d.number))
+            .attr("y", d => yLinearScale(d.average))
+            .attr("width", xBandScale.bandwidth())
+            .attr("height", d => chartHeight - yLinearScale(d.average));
+        chartGroup2.selectAll(".bar")
+            .data(data)
+            .enter()
+            .append("rect")
+            .attr("class", "bar")
+            .attr("x", d => xBandScale(d.number))
+            .attr("y", d => yLinearScale2(d.frequency))
+            .attr("width", xBandScale.bandwidth())
+            .attr("height", d => chartHeight - yLinearScale2(d.frequency));
+
+        //Appending Text
+        chartGroup.append("text")
+        .attr("transform", `translate(${chartWidth / 2}, ${chartHeight + chartMargin.top + 20})`)
+        .attr("text-anchor", "middle")
+        .attr("font-size", "32px")
+        .attr("fill", "green")
+        .text("Numbers")
+        chartGroup.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - chartMargin.left)
+        .attr("x", 0 - (chartHeight / 2))
+        .attr("dy", "1em")
+        .attr("class", "axisText")
+        .text("Average ($)");
+        chartGroup.append("text")
+        .attr("x", (chartWidth / 2))             
+        .attr("y", 0 - (chartMargin.top / 2))
+        .attr("text-anchor", "middle")  
+        .style("font-size", "16px") 
+        .style("text-decoration", "underline")  
+        .text("Average Amount Won for Each Number");
+        chartGroup2.append("text")
+        .attr("transform", `translate(${chartWidth / 2}, ${chartHeight + chartMargin.top + 20})`)
+        .attr("text-anchor", "middle")
+        .attr("font-size", "32px")
+        .attr("fill", "green")
+        .text("Numbers")
+        chartGroup2.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - chartMargin.left)
+        .attr("x", 0 - (chartHeight / 2))
+        .attr("dy", "1em")
+        .attr("class", "axisText")
+        .text("Frequency");
+        chartGroup2.append("text")
+        .attr("x", (chartWidth / 2))             
+        .attr("y", 0 - (chartMargin.top / 2))
+        .attr("text-anchor", "middle")  
+        .style("font-size", "16px") 
+        .style("text-decoration", "underline")  
+        .text("Frequency of Numbers picked");
+    });
+    </script>
+</body>
+</html>

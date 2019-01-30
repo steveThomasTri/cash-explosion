@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Winner's Map</title>
+
+    <!-- Leaflet JS & CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css"
+   integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+   crossorigin=""/>
+   <script src="https://unpkg.com/leaflet@1.3.4/dist/leaflet.js"
+   integrity="sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA=="
+   crossorigin=""></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css')}}">
+    <script src="{{ url_for('static', filename='bootstrap.min.js')}}"></script>
+
+    <!-- d3 JavaScript -->
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+
+    <!-- Our CSS -->
+    <link rel="stylesheet" type="text/css" href="static/css/style.css">
+    <style>
+    body {
+        padding: 0;
+        margin: 0;
+        }
+
+        #map,
+        body,
+        html {
+        height: 100%;
+        }
+
+        #map{width:60%; margin:0 auto}
+        #mapcontrols{border:1px solid black; position:fixed;top:0;right:0;width:100px;height:100px}
+    </style>
+
+  </head>
+  <body>
+      <nav class="navbar navbar-light bg-light">
+          <a class="navbar-brand" href="/">
+              <img src="{{url_for('static', filename='icon/cashexplosion.svg')}}" class="d-inline-block align-top" alt="">
+          </a>
+          <form class="form-inline">
+        {% for n in navbar %}
+            <a href="/{{n.link}}" class="btn btn-primary">{{n.name}}</a>
+        {% endfor %}
+          </form>
+      </nav>
+    <!-- map div -->
+    <div id="map"></div>
+    <!-- API key -->
+    <script type="text/javascript" src="{{ url_for('static', filename='config.js')}}"></script>
+      <!-- JS  -->
+    <script type="text/javascript" src="{{ url_for('static', filename='logic.js')}}"></script>
+
+  </body>
+</html>

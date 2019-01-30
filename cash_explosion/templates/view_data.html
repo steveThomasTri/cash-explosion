@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Games Data</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css')}}">
+    <script src="{{ url_for('static', filename='bootstrap.min.js')}}"></script>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='icon/cashexplosion.ico')}}">
+    <style>
+        #wrapper{
+            width:80%;
+            margin:0 auto;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-light bg-light">
+        <a class="navbar-brand" href="/">
+            <img src="{{url_for('static', filename='icon/cashexplosion.svg')}}" class="d-inline-block align-top" alt="">
+        </a>
+        <form class="form-inline">
+        {% for n in navbar %}
+            <a href="/{{n.link}}" class="btn btn-primary">{{n.name}}</a>
+        {% endfor %}
+        </form>
+    </nav>
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>date</th>
+                        <th>Player</th>
+                        <th>Residence</th>
+                        <th>State</th>
+                        <th>Ticket Bought</th>
+                        <th>First Number</th>
+                        <th>Second Number</th>
+                        <th>Third Number</th>
+                        <th>Amount #1</th>
+                        <th>Amount #2</th>
+                        <th>Amount #3</th>
+                        <th># of Doubles</th>
+                        <th>Game Total</th>
+                        <th>Bonus</th>
+                        <th>Grand Total</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='d3.min.js')}}"></script>
+    <script>
+    d3.json("/api/get_data").then(function(data){
+        d3.select("tbody")
+            .selectAll("tr")
+            .data(data)
+            .enter()
+            .append("tr")
+            .html(function(d) {
+                var total = d.first_amount+d.second_amount+d.third_amount;
+                return `<td>${d.id}</td>
+                        <td>${d.date}</td>
+                        <td>${d.name}</td>
+                        <td>${d.residence}</td>
+                        <td>${d.state}</td>
+                        <td>${d.ticket_bought}</td>
+                        <td>${d.first_pick}</td>
+                        <td>${d.second_pick}</td>
+                        <td>${d.third_pick}</td>
+                        <td>$${d.first_amount}</td>
+                        <td>$${d.second_amount}</td>
+                        <td>$${d.third_amount}</td>
+                        <td>${d.doubles}</td>
+                        <td>$${total}</td>
+                        <td>$${d.bonus_amount}</td>
+                        <td>$${total + d.bonus_amount}</td>`;
+            });
+    })
+    </script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Number #{{number.number}} Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css')}}">
+    <script src="{{ url_for('static', filename='bootstrap.min.js')}}"></script>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='icon/cashexplosion.ico')}}">
+    <style>
+        #wrapper{
+            width:90%;
+            margin:0 auto;
+        }
+
+        .dollarformat{
+            font-weight:bold;
+            color:white;
+        }
+        .border{
+            border:1px solid black;
+            border-radius:5px;
+            font-size:70px;
+        }
+        .border:hover{
+            text-decoration: none
+        }
+    </style>
+</head>
+<body id=''>
+    <nav class="navbar navbar-light bg-light">
+        <a class="navbar-brand" href="/">
+            <img src="{{url_for('static', filename='icon/cashexplosion.svg')}}" class="d-inline-block align-top" alt="">
+        </a>
+        <form class="form-inline">
+            {% for n in navbar %}
+                <a href="/{{n.link}}" class="btn btn-primary">{{n.name}}</a>
+            {% endfor %}
+        </form>
+    </nav>
+    <div class="container">
+        <h1 class="text-center">#{{number.number}} was chosen {{number.occurances}} times</h1>
+        <div class="text-center"><h2>Average amount won<br>${{number.average}}</h2></div>
+
+        {% for item in number.percent_occurance %}
+        <div class="row">
+            <div class="col-md-6" style="font-size:24px">number selected at least {{loop.index}} times per week</div>
+            <div class="col-md-6 text-right" style="font-size:24px">{{item}}%</div>
+        </div>
+        <hr>
+        {% endfor %}
+    </div>
+    <script src="{{ url_for('static', filename='d3.min.js')}}"></script>
+    <script>
+    Number.prototype.format = function(n, x) {
+        var re = '\\d(?=(\\d{' + (x || 3) + '})+' + (n > 0 ? '\\.' : '$') + ')';
+        return this.toFixed(Math.max(0, ~~n)).replace(new RegExp(re, 'g'), '$&,');
+    };
+    </script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Add Data</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css')}}">
+    <script src="{{ url_for('static', filename='bootstrap.min.js')}}"></script>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='icon/cashexplosion.ico')}}">
+    <style>
+        #wrapper{
+            width:80%;
+            margin:0 auto;
+        }
+    </style>
+    
+</head>
+<body>
+    <nav class="navbar navbar-light bg-light">
+        <a class="navbar-brand" href="/">
+            <img src="{{url_for('static', filename='icon/cashexplosion.svg')}}" class="d-inline-block align-top" alt="">
+        </a>
+        <form class="form-inline">
+        {% for n in navbar %}
+            <a href="/{{n.link}}" class="btn btn-primary">{{n.name}}</a>
+        {% endfor %}
+        </form>
+    </nav>
+    <div id="wrapper">
+        <form method="POST" action="/api/insertdata" id="submitdata" autocomplete="off">
+            <div class='form-group'>
+                <label for="date">Date of Appearance</label>
+                <input type="text" class='form-control' id='date' name='date'>
+            </div>
+            <div class='form-group'>
+                <label for="playerName">Player Name</label>
+                <input type="text" class='form-control' id='playerName' name='playerName'>
+            </div>
+            <div class="form-group row">
+                <div class="col-md-4">
+                    <label for="residence">Place of Residence</label>
+                    <input type="text" class='form-control' id='residence' name='residence'>
+                </div>
+                <div class="col-md-4">
+                    <label for="state">State of Residence</label>
+                    <select id='state' class='form-control'>
+                        <option value='OH' selected>OH</option>
+                        <option value='WV'>WV</option>
+                        <option value='IN'>IN</option>
+                        <option value='MI'>MI</option>
+                        <option value='KY'>KY</option>
+                        <option value='IL'>IL</option>
+                        <option value='FL'>FL</option>
+                        <option value='PA'>PA</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="ticketBought">Ticket Bought</label>
+                    <input type="text" class='form-control' id='ticketBought' name='ticketBought'>
+                </div>
+            </div>
+            <div class="row form-group">
+                <div class="col-md-2">
+                    <label for="number1">First Pick</label>
+                    <input type="text" class='form-control' id='number1' name='number1'>
+                </div>
+                <div class="col-md-2">
+                    <label for="amount1">First Amount</label>
+                    <input type="text" class='form-control' id='amount1' name='amount1'>
+                </div>
+                <div class="col-md-2">
+                    <label for="number2">Second Pick</label>
+                    <input type="text" class='form-control' id='number2' name='number2'>
+                </div>
+                <div class="col-md-2">
+                    <label for="amount2">Second Amount</label>
+                    <input type="text" class='form-control' id='amount2' name='amount2'>
+                </div>
+                <div class="col-md-2">
+                    <label for="number3">Third Pick</label>
+                    <input type="text" class='form-control' id='number3' name='number3'>
+                </div>
+                <div class="col-md-2">
+                    <label for="amount3">Third Amount</label>
+                    <input type="text" class='form-control' id='amount3' name='amount3'>
+                </div>
+            </div>
+            <div class='form-group'>
+                <label for="doubles">Doubles</label>
+                <select id="doubleshit" class='form-control'>
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                </select>
+            </div>
+            <div class='form-group'>
+                <label for="bonus">Bonus</label>
+                <select id="bonus" class='form-control'>
+                    <option value="0" selected>OFF</option>
+                    <option value="1">ON</option>
+                </select>
+                <input type="text" id='bonusamount' class="form-control">
+            </div>
+            <button type="submit" class='btn btn-primary' id='submitdata'>Submit Data</button>
+        </form>
+    </div>
+    <script src="{{ url_for('static', filename='d3.min.js')}}"></script>
+    <script>
+    d3.select("#date").attr("value", "2019-01-19")
+    d3.selectAll("#submitdata").on("submit", submitData)
+
+    function submitData(){
+        d3.event.preventDefault()
+
+        var date = d3.select("#date").node().value
+        var playerName = d3.select("#playerName").node().value
+
+        d3.json("/api/insertdata", {
+            method:"POST",
+            body:JSON.stringify({
+                date: date,
+                name: playerName,
+                residence: d3.select("#residence").node().value,
+                state:d3.select("#state")._groups[0][0].value,
+                ticket_bought: d3.select("#ticketBought").node().value,
+                first_pick:d3.select("#number1").node().value,
+                first_amount:d3.select("#amount1").node().value,
+                second_pick:d3.select("#number2").node().value,
+                second_amount:d3.select("#amount2").node().value,
+                third_pick:d3.select("#number3").node().value,
+                third_amount:d3.select("#amount3").node().value,
+                doubles:d3.select("#doubleshit")._groups[0][0].value,
+                bonus:d3.select("#bonus")._groups[0][0].value,
+                bonus_amount:d3.select("#bonusamount").node().value,
+            })
+        })
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Games Data</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css')}}">
+    <script src="{{ url_for('static', filename='bootstrap.min.js')}}"></script>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='icon/cashexplosion.ico')}}">
+    <style>
+        #wrapper{
+            width:90%;
+            margin:0 auto;
+        }
+        #title, #avghigh, #avgavg, #avglow{
+            font-size:24px
+        }
+
+        .dollarformat{
+            font-weight:bold;
+            color:white;
+        }
+
+        .high{background-color:red}
+        .avg{background-color: yellow; color:black}
+        .low{background-color: blue}
+    </style>
+</head>
+<body id=''>
+    <nav class="navbar navbar-light bg-light">
+        <a class="navbar-brand" href="/">
+            <img src="{{url_for('static', filename='icon/cashexplosion.svg')}}" class="d-inline-block align-top" alt="">
+        </a>
+        <form class="form-inline">
+        {% for n in navbar %}
+            <a href="/{{n.link}}" class="btn btn-primary">{{n.name}}</a>
+        {% endfor %}
+        </form>
+    </nav>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <div id='title' class="text-center">Average High Game Total</div>
+                <div id='avghigh' class="text-center dollarformat high"></div>
+            </div>
+            <div class="col-md-4">
+                <div id='title' class="text-center">Average Game Total</div>
+                <div id='avgavg' class="text-center dollarformat avg"></div>
+            </div>
+            <div class="col-md-4">
+                <div id='title' class="text-center">Average Low Game Total</div>
+                <div id='avglow' class="text-center dollarformat low"></div>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='d3.min.js')}}"></script>
+    <script>
+    Number.prototype.format = function(n, x) {
+        var re = '\\d(?=(\\d{' + (x || 3) + '})+' + (n > 0 ? '\\.' : '$') + ')';
+        return this.toFixed(Math.max(0, ~~n)).replace(new RegExp(re, 'g'), '$&,');
+    };
+    //SVG dimensions
+    var svgHeight = 500;
+    var svgWidth = window.innerWidth - 50;
+
+    //margins
+    var chartMargin = {
+        top: 30,
+        right: 30,
+        bottom: 50,
+        left: 80
+    };
+
+    // Define dimensions of the chart area
+    var chartWidth = svgWidth - chartMargin.left - chartMargin.right;
+    var chartHeight = svgHeight - chartMargin.top - chartMargin.bottom;
+
+    // Select body, append SVG area to it, and set the dimensions
+    var svg = d3.select("body")
+    .append("svg")
+    .attr("height", svgHeight)
+    .attr("width", svgWidth);
+
+    // Append a group to the SVG area and shift ('translate') it to the right and to the bottom
+    var chartGroup = svg.append("g")
+    .attr("transform", `translate(${chartMargin.left}, ${chartMargin.top})`);
+
+    var parseTime = d3.timeParse("%Y-%m-%d");
+
+    d3.json("/api/time_data").then(function(timeData){
+        timeData = JSON.parse(timeData)
+        timeData.forEach(function(data){
+            data.date = parseTime(data.date);
+        });
+
+        //Find the average of the averages
+        var averagemin = 0
+        var averageavg = 0
+        var averagemax = 0
+
+        timeData.forEach(function(data){
+            averagemin += data.min;
+            averageavg += data.avg;
+            averagemax += data.max
+        })
+
+        d3.select("#avghigh").html("$" + (averagemax / timeData.length).format(2,3))
+        d3.select("#avgavg").html("$" + (averageavg / timeData.length).format(2,3))
+        d3.select("#avglow").html("$" + (averagemin / timeData.length).format(2,3))
+
+        var xTimeScale = d3.scaleTime().domain(d3.extent(timeData, data=>data.date)).range([0,chartWidth])
+        var yLinearScale = d3.scaleLinear().domain([6000,d3.max(timeData, data=>data.max)]).range([chartHeight, 0])
+        var yLinearScale2 = d3.scaleLinear().domain([6000,d3.max(timeData, data=>data.max)]).range([chartHeight, 0])
+        var yLinearScale3 = d3.scaleLinear().domain([6000,d3.max(timeData, data=>data.max)]).range([chartHeight, 0])
+
+        // Create two new functions passing the scales in as arguments
+        // These will be used to create the chart's axes
+        var bottomAxis = d3.axisBottom(xTimeScale).tickFormat(d3.timeFormat("%m %d %y"));
+        var leftAxis = d3.axisLeft(yLinearScale);
+
+        // Configure a line function which will plot the x and y coordinates using our scales
+        var drawLine1 = d3.line()
+            .x(data => xTimeScale(data.date))
+            .y(data => yLinearScale(data.max));
+        var drawLine2 = d3.line()
+            .x(data => xTimeScale(data.date))
+            .y(data => yLinearScale2(data.avg));
+        var drawLine3 = d3.line()
+            .x(data => xTimeScale(data.date))
+            .y(data => yLinearScale3(data.min));
+
+        // Append an SVG path and plot its points using the line function
+        chartGroup.append("path")
+            .data([timeData])
+            .attr("d", drawLine1(timeData))
+            .classed("line", true)
+            .attr("stroke", "red")
+            .attr("stroke-width", "3")
+            .attr("fill", "none")
+        chartGroup.append("path")
+            // The drawLine function returns the instructions for creating the line for forceData
+            .data([timeData])
+            .attr("d", drawLine2(timeData))
+            .classed("line", true)
+            .attr("stroke", "yellow")
+            .attr("stroke-width", "3")
+            .attr("fill", "none")
+        chartGroup.append("path")
+            // The drawLine function returns the instructions for creating the line for forceData
+            .data([timeData])
+            .attr("d", drawLine3(timeData))
+            .classed("line", true)
+            .attr("stroke", "blue")
+            .attr("stroke-width", "3")
+            .attr("fill", "none")
+
+        // Append an SVG group element to the chartGroup, create the left axis inside of it
+        chartGroup.append("g")
+            .classed("axis", true)
+            .call(leftAxis);
+
+        // Append an SVG group element to the chartGroup, create the bottom axis inside of it
+        // Translate the bottom axis to the bottom of the page
+        chartGroup.append("g")
+            .classed("axis", true)
+            .attr("transform", `translate(0, ${chartHeight})`)
+            .call(bottomAxis);
+        
+    });
+    </script>
+</body>
+</html>

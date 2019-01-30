@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Numbers</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css')}}">
+    <script src="{{ url_for('static', filename='bootstrap.min.js')}}"></script>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='icon/cashexplosion.ico')}}">
+    <style>
+        #wrapper{
+            width:90%;
+            margin:0 auto;
+        }
+
+        .dollarformat{
+            font-weight:bold;
+            color:white;
+        }
+        .border{
+            border:1px solid black;
+            border-radius:5px;
+            font-size:70px;
+        }
+        .border:hover{
+            text-decoration: none
+        }
+    </style>
+</head>
+<body id=''>
+    <nav class="navbar navbar-light bg-light">
+        <a class="navbar-brand" href="/">
+            <img src="{{url_for('static', filename='icon/cashexplosion.svg')}}" class="d-inline-block align-top" alt="">
+        </a>
+        <form class="form-inline">
+        {% for n in navbar %}
+            <a href="/{{n.link}}" class="btn btn-primary">{{n.name}}</a>
+        {% endfor %}
+        </form>
+    </nav>
+    <h1>Select a number for statistics</h1>
+    <div class="container">
+        <div class="row">
+            <a class='col-md-3 border text-center' href="/number/1">1</a>
+            <a class='col-md-3 border text-center' href="/number/2">2</a>
+            <a class='col-md-3 border text-center' href="/number/3">3</a>
+            <a class='col-md-3 border text-center' href="/number/4">4</a>
+        </div>
+        <div class="row">
+            <a class='col-md-3 border text-center' href="/number/5">5</a>
+            <a class='col-md-3 border text-center' href="/number/6">6</a>
+            <a class='col-md-3 border text-center' href="/number/7">7</a>
+            <a class='col-md-3 border text-center' href="/number/8">8</a>
+        </div>
+        <div class="row">
+            <a class='col-md-3 border text-center' href="/number/9">9</a>
+            <a class='col-md-3 border text-center' href="/number/10">10</a>
+            <a class='col-md-3 border text-center' href="/number/11">11</a>
+            <a class='col-md-3 border text-center' href="/number/12">12</a>
+        </div>
+        <div class="row">
+            <a class='col-md-3 border text-center' href="/number/13">13</a>
+            <a class='col-md-3 border text-center' href="/number/14">14</a>
+            <a class='col-md-3 border text-center' href="/number/15">15</a>
+            <a class='col-md-3 border text-center' href="/number/16">16</a>
+        </div>
+        <div class="row">
+            <a class='col-md-3 border text-center' href="/number/17">17</a>
+            <a class='col-md-3 border text-center' href="/number/18">18</a>
+            <a class='col-md-3 border text-center' href="/number/19">19</a>
+            <a class='col-md-3 border text-center' href="/number/20">20</a>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='d3.min.js')}}"></script>
+    <script>
+    Number.prototype.format = function(n, x) {
+        var re = '\\d(?=(\\d{' + (x || 3) + '})+' + (n > 0 ? '\\.' : '$') + ')';
+        return this.toFixed(Math.max(0, ~~n)).replace(new RegExp(re, 'g'), '$&,');
+    };
+    
+    </script>
+</body>
+</html>
